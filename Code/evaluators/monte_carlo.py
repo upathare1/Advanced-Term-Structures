@@ -7,7 +7,7 @@ from IPython.display import display
 class MonteCarlo:
     def __init__(self, model):
         self.model = model
-    def _generate_path(self, r0, T: float, m: int, n=None, P=None, J=None):
+    def _generate_path(self, r0, T: float, m: int, n=None, P=None, J=None, J_pos=None):
         """
         r0, float: i-rate today
         T, float: Maturity date (in years)
@@ -22,15 +22,17 @@ class MonteCarlo:
             n = np.empty(num_steps)
             P = np.empty(num_steps)
             J = np.empty(num_steps)
+            J_pos = np.empty(num_steps)
             none = True
         r[0] = r0
         for j in range(num_steps):
-            r[j+1], n[j], P[j], J[j] = self.model.increment(rj=r[j], dt=dt, 
+            r[j+1], n[j], P[j], J[j], J_pos[j] = self.model.increment(rj=r[j], dt=dt, 
                                                 nj=-n[j] if not none else None,
                                                 Pj=P[j] if not none else None,
                                                 Jj=-J[j] if not none else None,
+                                                Jj_pos=J_pos[j] if not none else None
                                                 )
-        return r, n, P, J
+        return r, n, P, J, J_pos
     def _evaluate_price(self, r: np.array, m: int):
         """
         r, 1xk np.array: i-rate path,
@@ -47,7 +49,7 @@ class MonteCarlo:
         """
         prices = np.empty(n)
         for i in range(n):
-            r, _, __, ___ = self._generate_path(r0, T, m)
+            r, _, __, ___, ____ = self._generate_path(r0, T, m)
             prices[i] = self._evaluate_price(r, m)
         return np.mean(prices), np.std(prices)
     def _simulate_paths_anti(self, m: int, r0: float, n: int, T: float):
@@ -59,7 +61,7 @@ class MonteCarlo:
         """
         prices = np.empty(n)
         for i in range(n):
-            r1, n, P, J = self._generate_path(r0, T, m)
-            r2, _, __, ___ = self._generate_path(r0, T, m, n, P, J)
+            r1, n, P, J, J_pos = self._generate_path(r0, T, m)
+            r2, _, __, ___, ____ = self._generate_path(r0, T, m, n, P, J, J_pos)
             prices[i] = 0.5*(self._evaluate_price(r1, m) + self._evaluate_price(r2, m))
         return np.mean(prices), np.std(prices)
