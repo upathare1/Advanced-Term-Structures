@@ -7,14 +7,14 @@ class Vasicek:
     """Canonical Vasicek Model"""
     def __init__(self, model_params: dict):
         self.model_params = model_params
-    def increment(self, rj, dt, nj=None, Pj=None, Jj=None):
+    def increment(self, rj, dt, nj=None, Pj=None, Jj=None, Jj_pos=None):
         if nj is None:
             nj = np.random.normal()
-            Pj = np.random.poisson(model_params["h"]*dt)
-            Jj = np.random.normal(model_params["mu"], model_params["gamma"])
+            Pj = np.random.poisson(self.model_params["h"]*dt)
+            Jj = np.random.normal(self.model_params["mu"], self.model_params["gamma"])
         time_step = self.model_params["kappa"]*(self.model_params["mu_r"] - rj)*dt
         stoch_step = self.model_params["sigma"]*np.sqrt(dt)*nj
-        return rj + time_step + stoch_step, nj, Pj, Jj
+        return rj + time_step + stoch_step, nj, Pj, Jj, Jj_pos
     def exact(self, r0, T):
         """
         Returns exact price rate for maturity T
