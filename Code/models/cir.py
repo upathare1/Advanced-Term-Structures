@@ -10,14 +10,14 @@ class CIR:
     def increment(self, rj, dt, nj=None, Pj=None, Jj=None, Jj_pos=None):
         if nj is None:
             nj = np.random.normal()
-        time_step = self.model_params["kappa_r"]*(self.model_params["mu_r"] - rj)*dt
+        time_step = self.model_params["kappa"]*(self.model_params["mu_r"] - rj)*dt
         stoch_step = self.model_params["sigma"]*np.sqrt(rj)*np.sqrt(dt)*nj
         return rj + time_step + stoch_step, nj, Pj, Jj, Jj_pos
     def exact(self, r0, T):
         """
         Returns exact price rate for maturity T
         """
-        K_hat = self.model_params["kappa_r"]
+        K_hat = self.model_params["kappa"]
         mu_hat = self.model_params["mu_r"]
         sigma = self.model_params['sigma']
         gamma = np.sqrt(K_hat**2 + 2*sigma**2)
