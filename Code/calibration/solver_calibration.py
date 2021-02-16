@@ -10,7 +10,7 @@ from evaluators.monte_carlo import MonteCarlo
 
 class Calibration:
     """Class for calibrating i-rate models"""
-    def __init__(self, model_class, n: int, m: int, r0: float, model_params: dict, optimize_args: tuple, seed=93756826):
+    def __init__(self, model_class, n: int, m: int, r0: float, model_params: dict, optimize_args: tuple, calibrate_exact = False, seed=93756826):
         """
         model_class, class: Class for creating an interest rate model,
         model_params, dict: Starting parameters for model,
@@ -23,6 +23,7 @@ class Calibration:
         self.model_class = model_class
         self.model_params = model_params
         self.optimize_args = optimize_args
+        self.calibrate_exact = calibrate_exact
     
     def _calculate_error(self, optimize_params: np.array, Ts: np.array, prices: np.array) -> float:
         """
@@ -38,7 +39,10 @@ class Calibration:
         i = 0
         for price, T in zip(prices, Ts):
             np.random.seed(self.seed) # set seed to minimize variation in results arising from different draws
-            errors[i] = mc._simulate_paths_anti(m=self.m, r0=0.05, n=self.n, T=T)[0] - price
+            if self.calibrate_exact:
+                errors[i] = model.exact(r0=self.r0, T=T) - price
+            else:
+                errors[i] = mc._simulate_paths_anti(m=self.m, r0=self.r0, n=self.n, T=T)[0] - price
             i += 1
         return np.linalg.norm(errors)
 
