@@ -37,6 +37,9 @@ class JumpCIR:
             Jj = 0
         else:
             lower_bound = (-rj - time_step - stoch_step)/Pj
-            upper_bound = -lower_bound
-            Jj = truncnorm(lower_bound, upper_bound, loc=self.model_params["mu"], scale=self.model_params["gamma"]).rvs(1)[0]
+            try:
+                Jj = truncnorm(-np.abs(lower_bound), np.abs(lower_bound), loc=self.model_params["mu"], scale=self.model_params["gamma"]).rvs(1)[0]
+            except Exception as de:
+                print("Domain Error")
+                print(f"Param values: {rj, dt, nj, Pj, time_step, stoch_step}")
         return Jj
