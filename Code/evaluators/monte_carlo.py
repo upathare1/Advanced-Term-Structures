@@ -92,3 +92,27 @@ class MonteCarlo:
         c = -np.cov(prices_classical, prices_jump)[0][1]/np.var(prices_classical)
         prices = prices_jump + np.multiply(c, prices_classical - exact_price)
         return np.mean(prices), np.std(prices)
+    
+    def _simulate_paths_cv_anti(self, m: int, r0: float, n: int, T: float, exact_model_class):
+        """
+        m, int: time steps per year
+        r0, float: i-rate today
+        n, int: number of simulations
+        T, float: Maturity date (in years)
+        exact_model_class, i-rate model class with exact solution
+        """
+        exact_model = exact_model_class(self.model.model_params)
+        prices = np.empty(n)
+        prices_classical = np.empty(n)
+        prices_jump = np.empty(n)
+        exact_price = exact_model.exact(r0=r0, T=T)
+        for i in range(n):
+            r_exact, n, P, J, J_pos = self._generate_path(r0, T, m, model=exact_model)
+            r2_exact, _ , __, ___, ____ = self._generate_path(r0, T, m, n, P, J, J_pos, model=exact_model)
+            prices_classical[i] = 0.5*(self._evaluate_price(r_exact, m) + self._evaluate_price(r2_exact, m)) 
+            r_actual, n, P, J, J_pos = self._generate_path(r0, T, m)
+            r2_actual, _ , __, ___, ____ = self._generate_path(r0, T, m, n, P, J, J_pos)
+            prices_jump[i] = 0.5*(self._evaluate_price(r_actual, m) + self._evaluate_price(r2_actual, m))       
+        c = -np.cov(prices_classical, prices_jump)[0][1]/np.var(prices_classical)
+        prices = prices_jump + np.multiply(c, prices_classical - exact_price)
+        return np.mean(prices), np.std(prices)
