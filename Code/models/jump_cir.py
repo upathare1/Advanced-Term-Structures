@@ -1,8 +1,8 @@
 "Classes for Jump CIR Model"
 
-import numpy as np
-from scipy.stats import truncnorm
 import math
+import numpy as np
+from scipy.stats import truncnorm, norm, poisson
 
 class JumpCIR:
     """CIR Model with jumps"""
@@ -16,7 +16,7 @@ class JumpCIR:
             nj = np.random.normal()
             Pj = np.random.poisson(self.model_params["h"]*dt)
         time_step = self.model_params["kappa"]*(self.model_params["mu_r"] - rj)*dt
-        stoch_step = self.model_params["sigma"]*np.sqrt(rj)*np.sqrt(dt)*nj
+        stoch_step = self.model_params["sigma"]*np.sqrt(np.abs(rj))*np.sqrt(dt)*nj
         if Jj is None or math.isnan(Jj):
             Jj = self.jump_norm(rj, dt, nj, Pj, time_step, stoch_step)
             if Jj_pos is not None:
@@ -43,3 +43,23 @@ class JumpCIR:
                 print("Domain Error")
                 print(f"Param values: {rj, dt, nj, Pj, time_step, stoch_step}")
         return Jj
+
+    def transition(self, rt, rt_1, dt, limit=2) -> float:
+        """
+        Calculate the transition density for rt for an observed rt_1 and model parameters.
+        Calculate the first (limit) terms of the infinite series
+        --
+        rt, float: observed rate at t,
+        rt_1, float: observed rate at t-dt,
+        dt, float: time step,
+        limit, int: number of terms in the inf series to calculate
+        """
+        kappa, mu_r, sigma, gamma, h = self.model_params["kappa"], self.model_params["mu_r"], self.model_params["sigma"], self.model_params["gamma"], self.model_params["h"]
+        sum_ = 0
+        for n in range(limit):
+            expon_density = poisson.pmf(n, mu=h*dt)
+            normal_sd = np.sqrt(n*(gamma**2) + dt*((rt_1)*sigma**2))
+            normal_mean = rt_1 + kappa*(mu_r - rt_1)*dt
+            normal_density = norm.pdf(rt, loc=normal_mean, scale=normal_sd)
+            sum_ += normal_density*expon_density
+        return sum_
