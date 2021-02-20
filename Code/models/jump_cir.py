@@ -58,8 +58,8 @@ class JumpCIR:
         sum_ = 0
         for n in range(limit):
             expon_density = poisson.pmf(n, mu=h*dt)
-            normal_sd = np.sqrt(n*(gamma**2) + dt*((rt_1)*sigma**2))
-            normal_mean = rt_1 + kappa*(mu_r - rt_1)*dt
+            normal_sd = np.sqrt((n**2)*(gamma**2) + dt*((rt_1)*sigma**2))
+            normal_mean = rt_1 + kappa*(mu_r - rt_1)*dt + mu*n
             normal_density = norm.pdf(rt, loc=normal_mean, scale=normal_sd)
             sum_ += normal_density*expon_density
         return sum_

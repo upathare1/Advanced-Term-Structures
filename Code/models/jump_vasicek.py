@@ -40,12 +40,12 @@ class JumpVasicek:
         dt, float: time step,
         limit, int: number of terms in the inf series to calculate
         """
-        kappa, mu_r, sigma, gamma, h = self.model_params["kappa"], self.model_params["mu_r"], self.model_params["sigma"], self.model_params["gamma"], self.model_params["h"]
+        kappa, mu_r, sigma, mu, gamma, h = self.model_params["kappa"], self.model_params["mu_r"], self.model_params["sigma"], self.model_params['mu'], self.model_params["gamma"], self.model_params["h"]
         sum_ = 0
         for n in range(limit):
             expon_density = poisson.pmf(n, mu=h*dt)
-            normal_sd = np.sqrt(n*(gamma**2) + dt*(sigma**2))
-            normal_mean = rt_1 + kappa*(mu_r - rt_1)*dt
+            normal_sd = np.sqrt((n**2)*(gamma**2) + dt*(sigma**2))
+            normal_mean = rt_1 + kappa*(mu_r - rt_1)*dt + mu*n
             normal_density = norm.pdf(rt, loc=normal_mean, scale=normal_sd)
             sum_ += normal_density*expon_density
         return sum_
