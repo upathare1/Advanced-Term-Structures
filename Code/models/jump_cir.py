@@ -54,7 +54,7 @@ class JumpCIR:
         dt, float: time step,
         limit, int: number of terms in the inf series to calculate
         """
-        kappa, mu_r, sigma, gamma, h = self.model_params["kappa"], self.model_params["mu_r"], self.model_params["sigma"], self.model_params["gamma"], self.model_params["h"]
+        kappa, mu_r, sigma, mu, gamma, h = self.model_params["kappa"], self.model_params["mu_r"], self.model_params["sigma"], self.model_params["mu"], self.model_params["gamma"], self.model_params["h"]
         sum_ = 0
         for n in range(limit):
             expon_density = poisson.pmf(n, mu=h*dt)
