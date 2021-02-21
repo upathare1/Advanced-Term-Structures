@@ -24,3 +24,22 @@ class Vasicek:
         B = (1 - np.exp(-K*(T)))/K
         A = (B - (T))*(u_hat - self.model_params["sigma"]**2/(2*K*K)) - (self.model_params["sigma"]**2)*(B**2)/(4*K)
         return np.exp(A - B*r0)
+    
+     def transition(self, rt, rt_1, dt, limit=2) -> float:
+        """
+        Calculate the transition density for rt for an observed rt_1 and model parameters.
+        Calculate the first (limit) terms of the infinite series
+        --
+        rt, float: observed rate at t,
+        rt_1, float: observed rate at t-dt,
+        dt, float: time step,
+        limit, int: number of terms in the inf series to calculate
+        """
+        kappa, mu_r, sigma, mu, gamma, h = self.model_params["kappa"], self.model_params["mu_r"], self.model_params["sigma"], self.model_params['mu'], self.model_params["gamma"], self.model_params["h"]
+        sum_ = 0
+        for n in range(limit):
+            normal_sd = np.sqrt(dt*(sigma**2))
+            normal_mean = rt_1 + kappa*(mu_r - rt_1)*dt
+            normal_density = norm.pdf(rt, loc=normal_mean, scale=normal_sd)
+            sum_ += normal_density
+        return sum_
