@@ -25,7 +25,7 @@ class Vasicek:
         A = (B - (T))*(u_hat - self.model_params["sigma"]**2/(2*K*K)) - (self.model_params["sigma"]**2)*(B**2)/(4*K)
         return np.exp(A - B*r0)
     
-     def transition(self, rt, rt_1, dt, limit=2) -> float:
+    def transition(self, rt, rt_1, dt, limit=2):
         """
         Calculate the transition density for rt for an observed rt_1 and model parameters.
         Calculate the first (limit) terms of the infinite series
