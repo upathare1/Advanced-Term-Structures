@@ -11,7 +11,7 @@ class CIR:
         if nj is None:
             nj = np.random.normal()
         time_step = self.model_params["kappa"]*(self.model_params["mu_r"] - rj)*dt
-        stoch_step = self.model_params["sigma"]*np.sqrt(rj)*np.sqrt(dt)*nj
+        stoch_step = self.model_params["sigma"]*np.sqrt(np.abs(rj))*np.sqrt(dt)*nj
         return rj + time_step + stoch_step, nj, Pj, Jj, Jj_pos
     def exact(self, r0, T):
         """

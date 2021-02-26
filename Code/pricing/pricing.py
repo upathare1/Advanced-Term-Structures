@@ -20,7 +20,7 @@ class Pricing:
     
     def swap_rate(self, m, r0, n, freq, T:list):
         """
-        Calculates the price of bonds using MC
+        Calculates the price of i-rate swaps using MC
         m, int: time steps per year,
         r0, float: i-rate today
         n, 1x(T*m) np.array, array of draws,
