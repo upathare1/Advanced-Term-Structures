@@ -18,13 +18,18 @@ class Pricing:
         
         return mc._simulate_paths_anti(m, r0, n, T)[0]
     
-    def swap_rate(self, m, r0, n, freq, T:list):
+    def swap_rate(self, m: int, r0: float, n: int, freq: int, T:list):
         """
         Calculates the price of i-rate swaps using MC
         m, int: time steps per year,
         r0, float: i-rate today
+<<<<<<< HEAD
         n, int: number of simulations
         freq : frequency of payments in a year
+=======
+        n, int: number of iterations to run,
+        freq, int: frequency of payments in a year
+>>>>>>> 8fcf9765d3dd42a9ba16d15da8b929f6bd13fc25
         T, list: Payment dates of coupon and principal (in years) 
         """
         sr = np.empty(n)
@@ -36,5 +41,3 @@ class Pricing:
                 j = j + 1
             sr[i] = freq*(1-z[len(T)-1])/np.sum(z)
         return np.mean(sr), np.std(sr)
-    
-
