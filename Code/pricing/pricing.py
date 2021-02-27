@@ -16,7 +16,7 @@ class Pricing:
         """
         mc = MonteCarlo(self.model)
         
-        return mc._simulate_paths_anti(m, r0, n, T)
+        return mc._simulate_paths_anti(m, r0, n, T)[0]
     
     def swap_rate(self, m, r0, n, freq, T:list):
         """
@@ -27,15 +27,14 @@ class Pricing:
         freq : frequency of payments in a year
         T, list: Payment dates of coupon and principal (in years) 
         """
-        mc = MonteCarlo(self.model)
         sr = np.empty(n)
         for i in range(n):
             z = np.empty(len(T))
             j = 0
             for t in T:
-                r1, n, P, J, J_pos = mc._generate_path(r0, t, m)
-                r2, _, __, ___, ____ = mc._generate_path(r0, t, m, n, P, J, J_pos)
-                z[j] = 0.5*(mc._evaluate_price(r1, m) + mc._evaluate_price(r2, m))
+                # r1, n, P, J, J_pos = mc._generate_path(r0, t, m)
+                # r2, _, __, ___, ____ = mc._generate_path(r0, t, m, n, P, J, J_pos)
+                z[j] = self.bond_price(m, r0, n, t)
                 j = j + 1
             sr[i] = freq*(1-z[len(T)-1])/np.sum(z)
         return np.mean(sr), np.std(sr)
