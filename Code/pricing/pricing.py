@@ -23,7 +23,7 @@ class Pricing:
         Calculates the price of i-rate swaps using MC
         m, int: time steps per year,
         r0, float: i-rate today
-        n, 1x(T*m) np.array, array of draws,
+        n, int: number of simulations
         freq : frequency of payments in a year
         T, list: Payment dates of coupon and principal (in years) 
         """
@@ -32,8 +32,6 @@ class Pricing:
             z = np.empty(len(T))
             j = 0
             for t in T:
-                # r1, n, P, J, J_pos = mc._generate_path(r0, t, m)
-                # r2, _, __, ___, ____ = mc._generate_path(r0, t, m, n, P, J, J_pos)
                 z[j] = self.bond_price(m, r0, n, t)
                 j = j + 1
             sr[i] = freq*(1-z[len(T)-1])/np.sum(z)
