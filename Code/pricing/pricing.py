@@ -16,7 +16,7 @@ class Pricing:
         """
         mc = MonteCarlo(self.model)
         
-        return mc._simulate_paths_anti(m, r0, n, T)[0]
+        return mc._simulate_paths_anti(m, r0, n, T)
     
     def swap_rate(self, m: int, r0: float, n: int, freq: int, T:list):
         """
@@ -32,7 +32,7 @@ class Pricing:
             z = np.empty(len(T))
             j = 0
             for t in T:
-                z[j] = self.bond_price(m, r0, n, t)
+                z[j] = self.bond_price(m, r0, 1, t)[0]
                 j = j + 1
             sr[i] = freq*(1-z[len(T)-1])/np.sum(z)
         return np.mean(sr), np.std(sr)
