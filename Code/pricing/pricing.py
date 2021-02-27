@@ -23,13 +23,8 @@ class Pricing:
         Calculates the price of i-rate swaps using MC
         m, int: time steps per year,
         r0, float: i-rate today
-<<<<<<< HEAD
-        n, int: number of simulations
-        freq : frequency of payments in a year
-=======
         n, int: number of iterations to run,
         freq, int: frequency of payments in a year
->>>>>>> 8fcf9765d3dd42a9ba16d15da8b929f6bd13fc25
         T, list: Payment dates of coupon and principal (in years) 
         """
         sr = np.empty(n)
