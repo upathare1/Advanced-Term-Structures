@@ -1,17 +1,15 @@
-"Classes for Jump CIR Model"
+"""Classes for Jump CIR Model."""
 
 import math
 import numpy as np
 from scipy.stats import truncnorm, norm, poisson
 
 class JumpCIR:
-    """CIR Model with jumps"""
+    """CIR Model with jumps."""
     def __init__(self, model_params: dict):
         self.model_params = model_params
     def increment(self, rj: float, dt: float, nj=None, Pj=None, Jj=None, Jj_pos=None):
-        """
-        Calculates next interest rate step
-        """
+        """Calculates next interest rate step."""
         if nj is None or Pj is None: 
             nj = np.random.normal()
             Pj = np.random.poisson(self.model_params["h"]*dt)
@@ -30,9 +28,7 @@ class JumpCIR:
         return rj + time_step + stoch_step + jump_step, nj, Pj, None, Jj > 0
     
     def jump_norm(self, rj: float, dt: float, nj: float, Pj: float, time_step: float, stoch_step: float):
-        """
-        Calculates truncated jump for CIR
-        """
+        """Calculates truncated jump for CIR."""
         if Pj == 0:
             Jj = 0
         else:
@@ -58,7 +54,7 @@ class JumpCIR:
         sum_ = 0
         for n in range(limit):
             expon_density = poisson.pmf(n, mu=h*dt)
-            normal_sd = np.sqrt((n**2)*(gamma**2) + dt*((rt_1)*sigma**2))
+            normal_sd = np.sqrt(n*(gamma**2) + dt*(rt_1*(sigma**2)))
             normal_mean = rt_1 + kappa*(mu_r - rt_1)*dt + mu*n
             normal_density = norm.pdf(rt, loc=normal_mean, scale=normal_sd)
             sum_ += normal_density*expon_density

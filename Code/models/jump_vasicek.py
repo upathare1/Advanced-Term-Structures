@@ -1,4 +1,4 @@
-"Classes for Jump Vasicek Model"
+"""Classes for Jump Vasicek Model."""
 
 import math
 import numpy as np
@@ -6,7 +6,7 @@ from scipy.stats import norm, poisson
 
 
 class JumpVasicek:
-    """Vasicek Model with jumps"""
+    """Vasicek Model with jumps."""
     def __init__(self, model_params: dict):
         self.model_params = model_params
 
@@ -17,9 +17,7 @@ class JumpVasicek:
                   Pj=None,
                   Jj=None,
                   Jj_pos=None):
-        """
-        Calculates next interest rate step
-        """
+        """Calculates next interest rate step."""
         if nj is None or Pj is None or Jj is None:
             nj = np.random.normal()
             Pj = np.random.poisson(self.model_params["h"] * dt)
@@ -44,7 +42,7 @@ class JumpVasicek:
         sum_ = 0
         for n in range(limit):
             expon_density = poisson.pmf(n, mu=h*dt)
-            normal_sd = np.sqrt((n**2)*(gamma**2) + dt*(sigma**2))
+            normal_sd = np.sqrt(n*(gamma**2) + dt*(sigma**2))
             normal_mean = rt_1 + kappa*(mu_r - rt_1)*dt + mu*n
             normal_density = norm.pdf(rt, loc=normal_mean, scale=normal_sd)
             sum_ += normal_density*expon_density

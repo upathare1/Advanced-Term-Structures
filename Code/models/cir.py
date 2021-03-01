@@ -1,10 +1,10 @@
-"Classes for CIR Model"
+"""Classes for CIR Model."""
 
 import numpy as np
-import pandas as pd
+from scipy.stats import norm
 
 class CIR:
-    """Canonical CIR Model"""
+    """Canonical CIR Model."""
     def __init__(self, model_params: dict):
         self.model_params = model_params
     def increment(self, rj, dt, nj=None, Pj=None, Jj=None, Jj_pos=None):
@@ -14,9 +14,7 @@ class CIR:
         stoch_step = self.model_params["sigma"]*np.sqrt(np.abs(rj))*np.sqrt(dt)*nj
         return rj + time_step + stoch_step, nj, Pj, Jj, Jj_pos
     def exact(self, r0, T):
-        """
-        Returns exact price rate for maturity T
-        """
+        """Returns exact price rate for maturity T."""
         K_hat = self.model_params["kappa"]
         mu_hat = self.model_params["mu_r"]
         sigma = self.model_params['sigma']
@@ -37,8 +35,8 @@ class CIR:
         """
         kappa, mu_r, sigma, mu, gamma, h = self.model_params["kappa"], self.model_params["mu_r"], self.model_params["sigma"], self.model_params["mu"], self.model_params["gamma"], self.model_params["h"]
         sum_ = 0
-        for n in range(limit):
-            normal_sd = np.sqrt(dt*((rt_1)*sigma**2))
+        for n in range(1):  # Note we only iterate once for non-jump models
+            normal_sd = np.sqrt(dt*(rt_1*(sigma**2)))
             normal_mean = rt_1 + kappa*(mu_r - rt_1)*dt
             normal_density = norm.pdf(rt, loc=normal_mean, scale=normal_sd)
             sum_ += normal_density
