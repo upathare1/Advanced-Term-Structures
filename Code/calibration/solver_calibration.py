@@ -10,7 +10,7 @@ from evaluators.monte_carlo import MonteCarlo
 
 class Calibration:
     """Class for calibrating i-rate models"""
-    def __init__(self, model_class, n: int, m: int, r0: float, model_params: dict, optimize_args: tuple, seed=93756826):
+    def __init__(self, model_class, n: int, m: int, r0: float, model_params: dict, optimize_args: tuple, calibrate_exact = False, seed=93756826):
         """
         model_class, class: Class for creating an interest rate model,
         model_params, dict: Starting parameters for model,
@@ -23,6 +23,7 @@ class Calibration:
         self.model_class = model_class
         self.model_params = model_params
         self.optimize_args = optimize_args
+        self.calibrate_exact = calibrate_exact
     
     def _calculate_error(self, optimize_params: np.array, Ts: np.array, prices: np.array) -> float:
         """
@@ -34,19 +35,28 @@ class Calibration:
             model_params[arg] = param
         model = self.model_class(model_params)
         mc = MonteCarlo(model)
-        errors = np.empty(len(Ts))
-        i = 0
-        for price, T in zip(prices, Ts):
-            np.random.seed(self.seed) # set seed to minimize variation in results arising from different draws
-            errors[i] = mc._simulate_paths_anti(m=self.m, r0=0.05, n=self.n, T=T)[0] - price
-            i += 1
-        return np.linalg.norm(errors)
+        dates, maturities = prices.shape
+        date_errors = np.empty(dates)
+        maturity_errors = np.empty(maturities)
+        j = 0
+        for date in range(dates):
+            i = 0
+            for price, T in zip(prices[date, :], Ts):
+                np.random.seed(self.seed) # set seed to minimize variation in results arising from different draws
+                if self.calibrate_exact:
+                    maturity_errors[i] = model.exact(r0=self.r0, T=T) - price
+                else:
+                    maturity_errors[i] = mc._simulate_paths_anti(m=self.m, r0=self.r0, n=self.n, T=T)[0] - price
+                i += 1
+            date_errors[j] = np.linalg.norm(maturity_errors)
+            j += 1
+        return np.mean(date_errors)
 
     def calibrate(self, initial_values: tuple, Ts: np.array, prices: np.array, bounds: Bounds) -> OptimizeResult:
         """
         initial_values, np.array: same length as optimize_args,
         Ts, np.array: array of maturities to fit,
-        prices, np.array: array of prices to fit (same length as Ts),
+        prices, np.array: array of prices to fit (same number of columns as Ts),
         bounds, scipy.optimize.Bounds or None: linear bounds on solution
         """
         error_function = lambda optimize_params: self._calculate_error(optimize_params, Ts=Ts, prices=prices) 
