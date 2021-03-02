@@ -1,5 +1,6 @@
 """Classes for CIR Model."""
 
+import math
 import numpy as np
 from scipy.stats import norm
 
@@ -7,12 +8,15 @@ class CIR:
     """Canonical CIR Model."""
     def __init__(self, model_params: dict):
         self.model_params = model_params
-    def increment(self, rj, dt, nj=None, Pj=None, Jj=None, Jj_pos=None):
-        if nj is None:
+    def increment(self, rj: float, dt: float, nj=None, Pj=None, Jj=None, Jj_pos=None):
+        """Calculates next interest rate step."""
+        if nj is None or Pj is None: 
             nj = np.random.normal()
+            Pj = np.random.poisson(self.model_params["h"]*dt)
         time_step = self.model_params["kappa"]*(self.model_params["mu_r"] - rj)*dt
         stoch_step = self.model_params["sigma"]*np.sqrt(np.abs(rj))*np.sqrt(dt)*nj
-        return rj + time_step + stoch_step, nj, Pj, Jj, Jj_pos
+        return rj + time_step + stoch_step, nj, Pj, None, None
+    
     def exact(self, r0, T):
         """Returns exact price rate for maturity T."""
         K_hat = self.model_params["kappa"]
@@ -22,6 +26,19 @@ class CIR:
         B = 2*(np.exp(gamma*T) - 1) / ((gamma + K_hat)*(np.exp(gamma*T)-1) + 2*gamma)
         A = (2*K_hat*mu_hat / sigma**2) * (np.log(2*gamma*np.exp((gamma+K_hat)*T*0.5)) - np.log((gamma+K_hat)*(np.exp(gamma*T) - 1) + 2*gamma))
         return np.exp(A - B*r0)
+    
+    def jump_norm(self, rj: float, dt: float, nj: float, Pj: float, time_step: float, stoch_step: float):
+        """Calculates truncated jump for CIR."""
+        if Pj == 0:
+            Jj = 0
+        else:
+            lower_bound = (-rj - time_step - stoch_step)/Pj
+            try:
+                Jj = truncnorm(-np.abs(lower_bound), np.abs(lower_bound), loc=self.model_params["mu"], scale=self.model_params["gamma"]).rvs(1)[0]
+            except Exception as de:
+                print("Domain Error")
+                print(f"Param values: {rj, dt, nj, Pj, time_step, stoch_step}")
+        return Jj
     
     def transition(self, rt, rt_1, dt, limit=2) -> float:
         """
